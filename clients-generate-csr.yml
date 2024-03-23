@@ -1,0 +1,6 @@
+- hosts: all
+  tasks:
+  - name: Generate CSRs
+    import_role:
+      name: ca_client
+      tasks_from: gen-csr.yml

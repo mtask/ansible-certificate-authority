@@ -1,0 +1,28 @@
+- name: "Get content of {{ csr_on_controller }}"
+  slurp:
+    src: "{{ csr_on_controller }}"
+  register: _current_csr
+
+- name: Sign certificate with our CA
+  community.crypto.x509_certificate_pipe:
+    csr_content: "{{ _current_csr['content'] | b64decode }}"
+    provider: ownca
+    ownca_path: "{{ ca.crt.path }}"
+    ownca_privatekey_path: "{{ ca.key.path }}"
+    ownca_privatekey_passphrase: "{{ ca.key.passphrase }}"
+    ownca_not_after: "{{ ca.certs_not_after }}"
+    ownca_not_before: "-1d"  # valid since yesterday
+  become: yes
+  register: _current_crt
+
+- name: Copy certificate to controller
+  copy:
+    content: "{{ _current_crt.certificate }}"
+    dest: "{{ crts_controller_path }}/{{ csr_on_controller|basename|replace('.csr','.crt') }}"
+  delegate_to: localhost
+
+- name: Remove CSR after signing
+  file:
+    state: absent
+    path: "{{ csr_on_controller }}"
+  delegate_to: localhost

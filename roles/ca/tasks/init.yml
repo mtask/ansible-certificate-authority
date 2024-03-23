@@ -1,0 +1,47 @@
+- name: "Ensure {{ ca_base_path }} exists"
+  file:
+    state: directory
+    path: "{{ ca_base_path }}"
+    owner: "{{ ca_base_path_owner }}"
+    group: "{{ ca_base_path_group }}"
+    mode: "{{ ca_base_path_mode }}"
+  become: yes
+
+- name: Create private key with password protection
+  community.crypto.openssl_privatekey:
+    path: "{{ ca.key.path }}"
+    passphrase: "{{ ca.key.passphrase }}"
+    type: "{{ ca.key.type }}"
+    size: "{{ ca.key.size }}"
+    curve: "{{ ca.key.curve }}"
+    format: "{{ ca.key.format }}"
+    force: "{{ ca.key.force }}"
+    cipher: "auto"
+  become: yes
+  register: _ca_priv
+
+- name: Create certificate signing request (CSR) for CA certificate
+  community.crypto.openssl_csr_pipe:
+    privatekey_path: "{{ ca.key.path }}"
+    privatekey_passphrase: "{{ ca.key.passphrase }}"
+    common_name: "{{ ca.csr.common_name }}"
+    use_common_name_for_san: false
+    basic_constraints:
+      - 'CA:TRUE'
+    basic_constraints_critical: true
+    key_usage:
+      - keyCertSign
+    key_usage_critical: true
+  register: _ca_csr
+  become: yes
+  changed_when: _ca_priv.changed
+
+- name: Create self-signed CA certificate from CSR
+  community.crypto.x509_certificate:
+    path: "{{ ca.crt.path }}"
+    csr_content: "{{ _ca_csr.csr }}"
+    privatekey_path: "{{ ca.key.path }}"
+    privatekey_passphrase: "{{ ca.key.passphrase }}"
+    provider: selfsigned
+    selfsigned_not_after: "{{ ca.crt.not_after }}" 
+  become: yes

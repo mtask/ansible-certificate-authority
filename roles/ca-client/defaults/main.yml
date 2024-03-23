@@ -1,0 +1,25 @@
+ca_client:
+  key:
+    path: "{{ ca_client_base_path }}/{{ inventory_hostname }}.key"
+    type: "ECC"
+    size: "4096" # RSA / DSA
+    format: "auto_ignore"
+    curve: "secp384r1" # ECC
+    force: "{{ ca_client_reinit }}"
+  csr:
+    path: "{{ ca_client_base_path }}/{{ inventory_hostname }}.csr"
+    common_name: "{{ inventory_hostname }}"
+    subject_alt_name:
+       - 'DNS:test.example.local'
+  crt:
+    path: "{{ ca_client_base_path }}/{{ inventory_hostname }}.crt"
+
+ca_client_base_path: '/opt/ca_client'
+ca_client_base_path_owner: root
+ca_client_base_path_group: root
+ca_client_base_path_mode: '750'
+
+ca_client_reinit: false
+
+csrs_controller_path: /tmp/csrs
+crts_controller_path: /tmp/crts

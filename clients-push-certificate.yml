@@ -1,0 +1,6 @@
+- hosts: "all"
+  tasks:
+  - name: Push certificates
+    import_role:
+      name: ca_client
+      tasks_from: get-crt.yml

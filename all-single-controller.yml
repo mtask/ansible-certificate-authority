@@ -1,0 +1,8 @@
+- name: Initialize CA
+  import_playbook: ca-init.yml
+- name: Generate CSRs on clients
+  import_playbook: clients-generate-csr.yml
+- name: Sign CSRs
+  import_playbook: ca-sign.yml
+- name: Push certificates to clients
+  import_playbook: clients-push-certificate.yml

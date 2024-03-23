@@ -1,0 +1,12 @@
+- name: Check if certificate exists on the controller
+  stat:
+    path: "{{ crts_controller_path }}/{{ inventory_hostname }}.crt"
+  delegate_to: localhost
+  register: _crt_stat
+
+- name: "Copy certificate to {{ ca_client.crt.path }}"
+  copy:
+    src: "{{ crts_controller_path }}/{{ inventory_hostname }}.crt"
+    dest: "{{ ca_client.crt.path }}"
+  become: yes
+  when: _crt_stat.stat.exists

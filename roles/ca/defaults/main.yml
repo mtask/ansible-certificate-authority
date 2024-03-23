@@ -1,0 +1,26 @@
+ca_base_path: '/opt/ansible_ca'
+ca_base_path_owner: root
+ca_base_path_group: root
+ca_base_path_mode: '750'
+
+ca:
+  certs_not_after: "+365d"
+  key:
+    path: "{{ ca_base_path }}/ca-certificate.key"
+    passphrase: "{{ vault_ca_key_pass }}"
+    type: "ECC"
+    size: "4096" # RSA / DSA
+    format: "auto_ignore"
+    curve: "secp384r1" # ECC
+    force: "{{ ca_reinit }}"
+  csr:
+    common_name: 'Ansible CA'
+  crt:
+    path: "{{ ca_base_path }}/ca-certificate.crt"
+    not_after: "+3650d"
+
+# Re-initilize CA
+ca_reinit: false
+
+csrs_controller_path: /tmp/csrs
+crts_controller_path: /tmp/crts

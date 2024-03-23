@@ -1,0 +1,6 @@
+- hosts: "{{ ca_host|default('localhost') }}"
+  tasks:
+  - name: Sign certificates
+    import_role:
+      name: ca
+      tasks_from: get-and-sign-csrs.yml

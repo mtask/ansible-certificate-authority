@@ -1,0 +1,20 @@
+- name: Ensure path {{ crts_controller_path }} exists on controller
+  file:
+    state: directory
+    path: "{{ crts_controller_path }}"
+  delegate_to: localhost
+
+- name: Find all CSRs to sign
+  find:
+    path: "{{ csrs_controller_path }}"
+    patterns: "*.csr"
+  register: _csrs
+  delegate_to: localhost
+
+- name: Sign CSRs
+  include_tasks: signt-csr.yml
+  vars:
+    csr_on_controller: "{{ item.path }}"
+  loop: "{{ _csrs.files }}"
+  loop_control:
+    label: "{{ item.path }}"

@@ -1,0 +1,43 @@
+- name: "Ensure {{ ca_client_base_path }} exists"
+  file:
+    state: directory
+    path: "{{ ca_client_base_path }}"
+    owner: "{{ ca_client_base_path_owner }}"
+    group: "{{ ca_client_base_path_group }}"
+    mode: "{{ ca_client_base_path_mode }}"
+  become: yes
+
+- name: Create private key for new certificate
+  community.crypto.openssl_privatekey:
+    path: "{{ ca_client.key.path }}"
+    type: "{{ ca_client.key.type }}"
+    size: "{{ ca_client.key.size }}"
+    curve: "{{ ca_client.key.curve }}"
+    format: "{{ ca_client.key.format }}"
+    force: "{{ ca_client.key.force }}"
+  become: yes
+  register: _client_priv
+
+- name: Create certificate signing request (CSR) for new certificate
+  community.crypto.openssl_csr:
+    path: "{{ ca_client.csr.path }}"
+    privatekey_path: "{{ ca_client.key.path }}"
+    subject_alt_name: "{{ ca_client.csr.subject_alt_name }}"
+    common_name: "{{ ca_client.csr.common_name }}"
+  become: yes
+  when: _client_priv.changed
+
+- name: Ensure path {{ csrs_controller_path }} exists on controller
+  file:
+    state: directory
+    path: "{{ csrs_controller_path }}"
+  delegate_to: localhost
+  when: _client_priv.changed
+
+- name: "Fetch CSR to controller to path ~/csrs"
+  ansible.builtin.fetch:
+    src: "{{ ca_client.csr.path }}"
+    dest: "{{ csrs_controller_path }}/{{ ca_client.csr.path|basename }}"
+    flat: true
+  become: yes
+  when: _client_priv.changed
