@@ -1,9 +1,3 @@
-- name: Ensure path {{ crts_controller_path }} exists on controller
-  file:
-    state: directory
-    path: "{{ crts_controller_path }}"
-  delegate_to: localhost
-
 - name: Find all CSRs to sign
   find:
     path: "{{ csrs_controller_path }}"

@@ -1,3 +1,9 @@
+- name: Ensure path {{ crts_controller_path }} exists on controller
+  file:
+    state: directory
+    path: "{{ crts_controller_path }}"
+  delegate_to: localhost
+
 - name: "Ensure {{ ca_base_path }} exists"
   file:
     state: directory
@@ -45,3 +51,17 @@
     provider: selfsigned
     selfsigned_not_after: "{{ ca.crt.not_after }}" 
   become: yes
+
+
+- name: "Get content of CA certificate"
+  slurp:
+    src: "{{ ca.crt.path }}"
+  become: yes
+  register: _ca_cert
+
+- name: Copy CA certificate to controller
+  copy:
+    content: "{{ _ca_cert['content'] | b64decode }}"
+    dest: "{{ crts_controller_path }}/{{ ca.crt.path|basename }}"
+  delegate_to: localhost
+

@@ -2,6 +2,7 @@
   slurp:
     src: "{{ csr_on_controller }}"
   register: _current_csr
+  delegate_to: localhost
 
 - name: Sign certificate with our CA
   community.crypto.x509_certificate_pipe:

@@ -19,11 +19,12 @@ Check variables section below for necessary variable definitions.
 Playbooks starting with `ca-` are run on the CA's controller and playbooks starting with `clients-` are run on the client controller(s).
 
 1. Initialize your CA: `ansible-playbook ... ca-init.yml`
+  * CA certificate is copied to controller's path defined in variable. `crts_controller_path`. This is same place where client certificates will be found after signing.
 2. Generate CSRs for clients: `ansible-playbook ... clients-generate-csr.yml`
 3. Transfer CSR files from location defined in variable `csrs_controller_path` to CA's controller path defined with the same variable.
 4. Sign certificates with CA: `ansible-playbook ... ca-sign.yml`
 5. Transfer files from location defined in variable `crts_controller_path` to client controller(s) path defined with the same variable.
-6. Push signed certificates to clients: `ansible-playbook ... `
+6. Push signed certificates to clients: `ansible-playbook ... clients-push-certificate.yml`
 
 ### Single controller
 
